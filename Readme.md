@@ -13,9 +13,8 @@ Via npm:
 
 ```javascript
 
-import Captcha from 'form_recaptcha';
+import PDFEmbedViewer from 'pdfjs-embed-viewer';
 
-const [codeValue, setCodeValue] = useState('');
 
-<Captcha codeValue={codeValue} setCodeValue={setCodeValue} />
+<PDFEmbedViewer url='http://example.com/files/list.pdf' />
 ```

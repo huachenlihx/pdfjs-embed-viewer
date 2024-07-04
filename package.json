@@ -1,10 +1,12 @@
 {
   "name": "pdfjs-embed-viewer",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Pdfjs embed viewer",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -16,7 +18,7 @@
     "pdf-embed-viewer"
   ],
   "author": "Hua Chen",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/huachenlihx/pdfjs-embed-viewer/issues"
   },

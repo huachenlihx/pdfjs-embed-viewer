@@ -103,7 +103,7 @@ useEffect(() => {
 
   const context = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-  startTransition(
+  (
     async () => {
       // const pdf = await pdfjsLib.getDocument('/assets/newspaper/chinesepress_20180406_212.pdf').promise;
       try{
@@ -137,7 +137,7 @@ useEffect(() => {
           // setLoading(false);
       }
       
-  });
+  })();
 
   return () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
@@ -152,26 +152,17 @@ useEffect(() => {
     {isPending&& <p>Loading pdf...</p>}
     <Select
                 value={`${pageViewNum}`}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                    pdfPageViewNumRef.current = pageViewNum;
-                    console.log(e.target.value);
-                    setPageViewNum(+e.target.value);
-                    // scroll.scrollToTop({ delay: 0 }); //to page top
-                }}
+                onValueChange={(value: string) => setPageViewNum(parseInt(value))}
             >
+              <SelectContent>
                 {Array.from({ length: pdfTotalPages }, (x, i) => i + 1).map(
                     (page) => (
-                        <Option
-                            key={`key-option-${page}`}
-                            id={`page-option-${page}`}
-                            value={`${page}`}
-                        >
-                            {page}
-                        </Option>
+                      <SelectItem key={`key-option-${page}`} value={`${page}`} >{page}</SelectItem>
                     )
                 )}
+                </SelectContent>
             </Select>
-      <Box id="pdf-container" />
+      <div id="pdf-container" />
     </>
   );
 }
