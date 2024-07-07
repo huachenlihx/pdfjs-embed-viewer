@@ -1,8 +1,16 @@
-// https://stackoverflow.com/questions/44070437/how-to-get-a-file-or-blob-from-an-url-in-javascript
 import * as React from "react"
 import { useEffect, useRef, useState, useMemo, useTransition } from "react";
 import useSWR from 'swr'
-import axios, {AxiosInstance, AxiosRequestConfig, AxiosHeaders, AxiosResponse} from 'axios';
+import axios, {AxiosRequestConfig, AxiosHeaders, AxiosResponse} from 'axios';
+import '@/app/globals.css';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from "@/components/ui/button"
 import * as pdfjsLib from "pdfjs-dist";
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
  
@@ -31,8 +39,7 @@ interface IRequestConfig {
 
 export default function PDFViewer({url}: {url:string}) {
   const [pdf, setPDF] = useState<pdfjsLib.PDFDocumentProxy>();
-  const [pageViewNum, setPageViewNum] = useState(1);
-  const pdfPageViewNumRef = useRef(1);
+  const [pageViewNum, setPageViewNum] = useState(0);
   const [isPending, startTransition] = useTransition();
 
   const requestInit: AxiosRequestConfig = {
@@ -45,6 +52,7 @@ export default function PDFViewer({url}: {url:string}) {
 
   const pdfTotalPages: number = useMemo(() => {
     if (!pdf) return 0;
+    setPageViewNum(1);
     return pdf.numPages;
   }, [pdf]);
 
@@ -56,8 +64,6 @@ export default function PDFViewer({url}: {url:string}) {
 
 const handleSuccess = (res: AxiosResponse) => {
     console.log("Handle success", res);
-    const responseHeaders = res.headers as AxiosHeaders;
-    const fileName = (responseHeaders.get('COntent-Disposition') as string)?.split("filename=")[1]; //get is case insensitive.
     const pdfDocument: pdfjsLib.PDFDocumentLoadingTask =
             pdfjsLib.getDocument(window.URL.createObjectURL(new Blob([res.data as Blob])));
     (async () => {
@@ -68,7 +74,7 @@ const handleSuccess = (res: AxiosResponse) => {
           console.log("e", e);
           console.log("e.message", e.message);
       } finally {
-
+        console.log('PDF has been loaded!');
       }
   })();
 };
@@ -78,29 +84,21 @@ const swrConfig = {
   onError: handleError,
 };
 
-  const { data: response, error, isLoading} =  useSWR(url, async () => fetcher(requestInit as AxiosRequestConfig), swrConfig);
-  console.log('data', response);
-  console.log('data type', typeof response);
-  console.log('error', error);
-  console.log('isLoading', isLoading);
+  const { data: response, error, isLoading} =  useSWR(url, async () => fetcher(requestInit), swrConfig);
 
-  
-
-// useAxiosResponse({response, error, isLoading}, handleSuccess, handleError);
 
 useEffect(() => {
   if (!pdf) return;
-  
   const canvas: HTMLCanvasElement = document.createElement("canvas");
   canvas.id = "pdf";
   canvas.style.setProperty("width", "99%", "important");
   canvas.style.setProperty("height", "auto", "important");
 
   const context = canvas.getContext("2d") as CanvasRenderingContext2D;
+  startTransition(()=>{
 
   (
     async () => {
-      // const pdf = await pdfjsLib.getDocument('/assets/newspaper/chinesepress_20180406_212.pdf').promise;
       try{
           // Load information from the first page.
           const page = await pdf.getPage(pageViewNum);
@@ -133,6 +131,7 @@ useEffect(() => {
       }
       
   })();
+});
 
   return () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
@@ -143,17 +142,36 @@ useEffect(() => {
 
   return (
     <>
-    {isLoading&& <p>downloading...</p>}
-    {isPending&& <p>Loading pdf...</p>}
-    <label htmlFor="pdfPageSelect">page:</label>
-    <select name="pdfPageSelect" id="pdfPageSelect">
-                {Array.from({ length: pdfTotalPages }, (x, i) => i + 1).map(
-                    (page) => (
-                      <option key={`key-option-${page}`} value={`${page}`} >{page}</option>
-                    )
-                )}
-            </select>
+    <Select
+      disabled={isLoading}
+      onValueChange={(value) => setPageViewNum(+value)}
+      defaultValue={pageViewNum.toString()}
+      value={pageViewNum.toString()}
+      >
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder='Select a page' />
+        </SelectTrigger>
+        <SelectContent>
+        {Array.from({ length: pdfTotalPages }, (x, i) => i + 1).map(
+            (page) => (
+              <SelectItem className="w-[180px]" key={`key-option-${page}`} value={`${page}`}>
+                {page}
+              </SelectItem>
+            )
+        )}
+        </SelectContent>
+      </Select>
+      {isLoading && <p>Downloading...</p>}
+      {isPending && <p>Loading...</p>}
       <div id="pdf-container" />
+      {(!isLoading || pageViewNum !== 0) &&
+        <>
+        <Button variant="secondary" disabled={isPending || pageViewNum === 1} onClick={()=>setPageViewNum(prev => prev-1)}>Prev</Button>
+        <Button variant="secondary" disabled={isPending  || pageViewNum === pdfTotalPages} onClick={()=>setPageViewNum(next => next+1)}>Next</Button>
+        <Button variant="secondary" disabled={isPending || pageViewNum === 1} onClick={()=>setPageViewNum(1)}>First</Button>
+        <Button variant="secondary" disabled={isPending  || pageViewNum === pdfTotalPages} onClick={()=>setPageViewNum(pdfTotalPages)}>Last</Button>
+        </>
+      }
     </>
   );
 }
