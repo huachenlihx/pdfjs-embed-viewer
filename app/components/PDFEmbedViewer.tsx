@@ -1,16 +1,11 @@
 // https://stackoverflow.com/questions/44070437/how-to-get-a-file-or-blob-from-an-url-in-javascript
+import * as React from "react"
 import { useEffect, useRef, useState, useMemo, useTransition } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import useSWR from 'swr'
 import axios, {AxiosInstance, AxiosRequestConfig, AxiosHeaders, AxiosResponse} from 'axios';
 import * as pdfjsLib from "pdfjs-dist";
-pdfjsLib.GlobalWorkerOptions.workerSrc = require('pdfjs-dist/build/pdf.worker.min.js');
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+ 
 console.log("pdfjsLib version", pdfjsLib.version);
 
 const fetcher = async (
@@ -150,18 +145,14 @@ useEffect(() => {
     <>
     {isLoading&& <p>downloading...</p>}
     {isPending&& <p>Loading pdf...</p>}
-    <Select
-                value={`${pageViewNum}`}
-                onValueChange={(value: string) => setPageViewNum(parseInt(value))}
-            >
-              <SelectContent>
+    <label htmlFor="pdfPageSelect">page:</label>
+    <select name="pdfPageSelect" id="pdfPageSelect">
                 {Array.from({ length: pdfTotalPages }, (x, i) => i + 1).map(
                     (page) => (
-                      <SelectItem key={`key-option-${page}`} value={`${page}`} >{page}</SelectItem>
+                      <option key={`key-option-${page}`} value={`${page}`} >{page}</option>
                     )
                 )}
-                </SelectContent>
-            </Select>
+            </select>
       <div id="pdf-container" />
     </>
   );
