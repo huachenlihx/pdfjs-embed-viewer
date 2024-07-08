@@ -2,7 +2,6 @@ import * as React from "react"
 import { useEffect, useRef, useState, useMemo, useTransition } from "react";
 import useSWR from 'swr'
 import axios, {AxiosRequestConfig, AxiosHeaders, AxiosResponse} from 'axios';
-import '@/app/globals.css';
 import {
   Select,
   SelectContent,
@@ -141,7 +140,7 @@ useEffect(() => {
 
 
   return (
-    <>
+    <div className="text-center">
     <Select
       disabled={isLoading}
       onValueChange={(value) => setPageViewNum(+value)}
@@ -151,7 +150,7 @@ useEffect(() => {
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder='Select a page' />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="w-[180px]">
         {Array.from({ length: pdfTotalPages }, (x, i) => i + 1).map(
             (page) => (
               <SelectItem className="w-[180px]" key={`key-option-${page}`} value={`${page}`}>
@@ -166,12 +165,12 @@ useEffect(() => {
       <div id="pdf-container" />
       {(!isLoading || pageViewNum !== 0) &&
         <>
-        <Button variant="secondary" disabled={isPending || pageViewNum === 1} onClick={()=>setPageViewNum(prev => prev-1)}>Prev</Button>
-        <Button variant="secondary" disabled={isPending  || pageViewNum === pdfTotalPages} onClick={()=>setPageViewNum(next => next+1)}>Next</Button>
-        <Button variant="secondary" disabled={isPending || pageViewNum === 1} onClick={()=>setPageViewNum(1)}>First</Button>
+        <Button variant="secondary" disabled={isPending || pageViewNum === 1} onClick={()=>setPageViewNum(prev => prev-1)} className="space-x-0.5">Prev</Button>
+        <Button variant="secondary" disabled={isPending  || pageViewNum === pdfTotalPages} onClick={()=>setPageViewNum(next => next+1)} className="space-x-0.5">Next</Button>
+        <Button variant="secondary" disabled={isPending || pageViewNum === 1} onClick={()=>setPageViewNum(1)} className="space-x-0.5">First</Button>
         <Button variant="secondary" disabled={isPending  || pageViewNum === pdfTotalPages} onClick={()=>setPageViewNum(pdfTotalPages)}>Last</Button>
         </>
       }
-    </>
+    </div>
   );
 }
