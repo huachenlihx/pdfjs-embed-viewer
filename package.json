@@ -1,6 +1,6 @@
 {
   "name": "pdfjs-embed-viewer",
-  "version": "1.0.42",
+  "version": "1.0.57",
   "description": "Pdfjs embed viewer",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

@@ -47,8 +47,6 @@ export default function PDFViewer({url}: {url:string}) {
     responseType: "blob",
   };
 
-  // const { data, error, isLoading } =  useSWR("https://api.nytimes.com/svc/topstories/v2/us.json?api-key=126VaSBGe0agPBCGhWSGgGTbH1YGrdCP", fetcher);
-
   const pdfTotalPages: number = useMemo(() => {
     if (!pdf) return 0;
     setPageViewNum(1);
