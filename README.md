@@ -75,6 +75,24 @@ The tests cover blob requests, download state, PDF loading and canvas rendering,
 Issues and pull requests are welcome at
 [github.com/huachenlihx/pdfjs-embed-viewer](https://github.com/huachenlihx/pdfjs-embed-viewer/issues).
 
+## React compatibility (React 18 and React 19)
+
+The library declares `react` and `react-dom` as peer dependencies supporting React 18.3.1+ and React 19. Local development and testing use React 19; React is not bundled as a runtime dependency of the library. Both React versions must be installed in a consuming application and should be on matching major versions.
+
+### Verify the upgrade
+
+```bash
+npm install
+npm ls react react-dom
+npm test
+npm run typecheck
+npm run build
+```
+
+The included `package-lock.json` is from the previous installation. **Run `npm install` to regenerate it before `npm ci`**, then commit the refreshed lockfile. Test the published package in React 18 and React 19 consuming apps before describing both versions as verified.
+
+The viewer now displays PDF load/render failures as messages rather than silently ignoring them.
+
 ## License
 
 MIT © Hua Chen
