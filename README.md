@@ -75,6 +75,17 @@ The tests cover blob requests, download state, PDF loading and canvas rendering,
 Issues and pull requests are welcome at
 [github.com/huachenlihx/pdfjs-embed-viewer](https://github.com/huachenlihx/pdfjs-embed-viewer/issues).
 
+## Accessibility (WCAG 2.2 AA-oriented)
+
+The viewer includes a named document region and navigation landmark, an accessible page selector, keyboard-operated navigation buttons, visible focus styles, touch-friendly button targets, live announcements for loading and page changes, and error alerts. Automated tests cover several of these accessibility behaviors.
+
+**Important limitation:** PDF.js currently renders document pages to a canvas. An accessible label for the canvas does **not** expose the PDF's actual text, reading order, tables, or structure to screen readers. Full document accessibility requires an accessible PDF or a separate tagged/text-based viewing experience. Accordingly, this library does **not** claim WCAG 2.2 AA conformance.
+
+To review accessibility, navigate by keyboard, test with VoiceOver/NVDA, run axe on a consuming application, and inspect focus visibility at high zoom. See [ACCESSIBILITY.md](ACCESSIBILITY.md).
+
+
+
+
 ## React compatibility (React 18 and React 19)
 
 The library declares `react` and `react-dom` as peer dependencies supporting React 18.3.1+ and React 19. Local development and testing use React 19; React is not bundled as a runtime dependency of the library. Both React versions must be installed in a consuming application and should be on matching major versions.

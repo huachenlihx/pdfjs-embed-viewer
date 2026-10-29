@@ -119,12 +119,21 @@ describe('PDFViewer', () => {
     const canvas = document.querySelector('#pdf-container canvas') as HTMLCanvasElement;
     expect(canvas.width).toBe(640);
     expect(canvas.height).toBe(800);
+    expect(canvas).toHaveAttribute('role', 'img');
+    expect(canvas).toHaveAttribute('aria-label', expect.stringContaining('page 1 of 3'));
   });
 
   it('displays one selectable option for each PDF page', async () => {
     render(<PDFViewer url="/guide.pdf" />);
-    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(3));
-    expect(screen.getByRole('combobox', { name: 'PDF page' })).toHaveValue('1');
+    await waitFor(() => {
+      expect(screen.getAllByRole('option')).toHaveLength(3);
+      expect(screen.getByRole('combobox', { name: 'PDF page' })).toHaveValue('1');
+      expect(
+        screen.getByText('Page 1 of 3', {
+          selector: '[role="status"]',
+        })
+      ).toBeInTheDocument();
+    });
   });
 
   it('moves between pages using Next, Last, Prev, and First', async () => {
@@ -164,5 +173,27 @@ describe('PDFViewer', () => {
     render(<PDFViewer url="/invalid.pdf" />);
     await waitFor(() => expect(mocks.getDocument).toHaveBeenCalledOnce());
     await waitFor(() => expect(mocks.getPage).not.toHaveBeenCalled());
+  });
+});
+
+// Accessibility checks guard against regressions in semantics and keyboard-friendly controls.
+describe('PDFViewer accessibility', () => {
+  it('provides a named viewer region and page navigation landmark', async () => {
+    render(<PDFViewer url="/guide.pdf" />);
+    expect(
+      screen.getByRole('region', { name: 'PDF document viewer' })
+    ).toBeInTheDocument();
+
+    expect(
+      await screen.findByRole('navigation', { name: 'PDF page navigation' })
+    ).toBeInTheDocument();
+
+    expect(screen.getByRole('button', { name: 'Next' })).toHaveAccessibleName('Next');
+  });
+
+  it('announces the download state through a live status region', () => {
+    mocks.loading = true;
+    render(<PDFViewer url="/guide.pdf" />);
+    expect(screen.getByRole('status')).toHaveTextContent('Downloading...');
   });
 });
