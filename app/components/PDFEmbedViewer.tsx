@@ -1,7 +1,7 @@
 import * as React from "react"
-import { useEffect, useRef, useState, useMemo, useTransition } from "react";
+import { useEffect, useState, useMemo, useTransition } from "react";
 import useSWR from 'swr'
-import axios, {AxiosRequestConfig, AxiosHeaders, AxiosResponse} from 'axios';
+import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
 import {
   Select,
   SelectContent,
@@ -12,21 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import * as pdfjsLib from "pdfjs-dist";
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
- 
-console.log("pdfjsLib version", pdfjsLib.version);
 
-const fetcher = async (
-  request: AxiosRequestConfig<any>,
-) => {
-  try {
-      return await axios(request);
-  } catch (e) {
-      console.log('typeof e', typeof e);
-      console.log('e', e);
-      throw e; // e is an object, we have to parse it in page.tsx or component - Hua
-  }
-
-};
+const fetcher = (request: AxiosRequestConfig) => axios(request);
 
 
 interface IRequestConfig {
@@ -36,10 +23,11 @@ interface IRequestConfig {
   data?: object
 };
 
-export default function PDFViewer({url}: {url:string}) {
+export default function PDFViewer({url}: {readonly url:string}) {
   const [pdf, setPDF] = useState<pdfjsLib.PDFDocumentProxy>();
   const [pageViewNum, setPageViewNum] = useState(0);
   const [isPending, startTransition] = useTransition();
+  const [viewerError, setViewerError] = useState<string | null>(null);
 
   const requestInit: AxiosRequestConfig = {
     method: "get",
@@ -53,35 +41,32 @@ export default function PDFViewer({url}: {url:string}) {
     return pdf.numPages;
   }, [pdf]);
 
-  console.log('pdfTotalPages', pdfTotalPages);
-
-  const handleError = (error: Error | undefined) => {
-    console.log("Handle error", error);
-};
 
 const handleSuccess = (res: AxiosResponse) => {
-    console.log("Handle success", res);
+    setViewerError(null);
+
     const pdfDocument: pdfjsLib.PDFDocumentLoadingTask =
             pdfjsLib.getDocument(window.URL.createObjectURL(new Blob([res.data as Blob])));
-    (async () => {
+    void (async () => {
       try {
           const pdfData = await pdfDocument.promise;
           setPDF(pdfData);
-      } catch (e: any) {
-          console.log("e", e);
-          console.log("e.message", e.message);
-      } finally {
-        console.log('PDF has been loaded!');
+      } catch {
+          setPDF(undefined);
+          setViewerError("The downloaded file could not be opened as a PDF.");
       }
   })();
 };
 
 const swrConfig = {
   onSuccess: handleSuccess,
-  onError: handleError,
 };
 
-  const { data: response, error, isLoading} =  useSWR(url, async () => fetcher(requestInit), swrConfig);
+const { isLoading, error: downloadError } = useSWR(
+  url,
+  () => fetcher(requestInit),
+  swrConfig,
+);
 
 
 useEffect(() => {
@@ -92,11 +77,11 @@ useEffect(() => {
   canvas.style.setProperty("height", "auto", "important");
 
   const context = canvas.getContext("2d") as CanvasRenderingContext2D;
-  startTransition(()=>{
-
-  (
-    async () => {
-      try{
+  let cancelled = false;
+  startTransition(() => {
+    void (async () => {
+      try {
+          setViewerError(null);
           // Load information from the first page.
           const page = await pdf.getPage(pageViewNum);
           const viewport = page.getViewport({ scale: 1 });
@@ -113,24 +98,19 @@ useEffect(() => {
           const pdfPageRender = page.render(renderContext);
 
           await pdfPageRender.promise; //We have to use the property, promise, here - Hua
-          document.getElementById("pdf-container")?.replaceChildren(canvas);
-          console.log("Page rendered!");
-      } catch (e: any) {
-          
-          const ee = e as pdfjsLib.RenderingCancelledException;
-          if(ee) {
-             console.log(`Manually cancelled: ${ee.message}`);
-          }else {
-            console.log(e.message);
+          if (!cancelled) {
+            document.getElementById("pdf-container")?.replaceChildren(canvas);
           }
-      }finally {
-          // setLoading(false);
+      } catch {
+          if (!cancelled) {
+            setViewerError("Unable to render this PDF page. Please try another page.");
+          }
       }
-      
-  })();
-});
+    })();
+  });
 
   return () => {
+      cancelled = true;
       context.clearRect(0, 0, canvas.width, canvas.height);
       canvas.remove();
   };
@@ -160,6 +140,11 @@ useEffect(() => {
       </Select>
       {isLoading && <p>Downloading...</p>}
       {isPending && <p>Loading...</p>}
+      {(downloadError || viewerError) && (
+        <p role="alert">
+          {downloadError ? "Unable to download the PDF. Please try again." : viewerError}
+        </p>
+      )}
       <div id="pdf-container" />
       {(!isLoading || pageViewNum !== 0) &&
         <>

@@ -2,3 +2,5 @@
 /dist
 /my_profile.txt
 /help.txt
+/coverage
+.DS_Store

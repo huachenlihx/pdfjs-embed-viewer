@@ -53,6 +53,23 @@ npm install
 npm run build   # bundles with tsup into dist/
 ```
 
+## Automated testing
+
+The project uses **Vitest**, **React Testing Library**, and **jsdom** for component unit tests. The PDF.js document loader, browser canvas, and network requests are mocked so tests do not need a live PDF or external server.
+
+```bash
+npm install
+npm test                 # Run tests once
+npm run test:watch       # Watch mode
+npm run test:coverage    # Generate coverage report
+```
+
+Open the HTML coverage report on macOS with `open coverage/index.html` after generating it. The generated `coverage/` directory is ignored by Git.
+
+The tests cover blob requests, download state, PDF loading and canvas rendering, page selection and navigation, and failure cases. They do not replace real-browser validation with actual PDF documents.
+
+**Dependency note:** After extracting this update, run `npm install` to install the new test dependencies and refresh `package-lock.json`. Commit the regenerated lockfile. `react-dom` is pinned to React 18 to avoid React 18/19 peer-dependency conflicts.
+
 ## Contributing
 
 Issues and pull requests are welcome at
