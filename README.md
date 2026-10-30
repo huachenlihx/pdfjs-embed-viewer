@@ -5,6 +5,12 @@ Embed PDF files in Next.js pages with a React component built on [PDF.js](https:
 [![npm version](https://img.shields.io/npm/v/pdfjs-embed-viewer.svg)](https://www.npmjs.com/package/pdfjs-embed-viewer)
 [![license](https://img.shields.io/npm/l/pdfjs-embed-viewer.svg)](#license)
 
+## Demo — Next.js Integration
+
+The screenshot below shows `pdfjs-embed-viewer` running in a Next.js 16 App Router application with React 19 and TypeScript. The demo displays a PDF document, an accessible page selector, and Previous / Next / First / Last navigation controls. The PDF canvas scrolls independently while navigation remains visible.
+
+![PDF.js Embed Viewer integrated into Next.js, showing a PDF document with page selection and navigation controls](https://raw.githubusercontent.com/huachenlihx/pdfjs-embed-viewer/master/screenshots/pdf-viewer-demo.png)
+
 ## Features
 
 - Drop-in React component: pass a PDF URL and it renders in your page
